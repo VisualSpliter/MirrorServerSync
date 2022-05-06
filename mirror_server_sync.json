@@ -1,0 +1,20 @@
+{
+    "id": "Mirror_Server_Sync",
+    "version": "0.0.1-alpha",
+    "name": "Mirror Server Sync",
+    "description":"A Simple MCDR Plugin To Sync Map FIles Of Minecraft On Different Servers",
+    "author": [
+        "MRNOBODY-ZST",
+        "Power-tile"
+    ], 
+    "main_server_ip": "",
+    "world_name": "",
+    "link": "https://github.com/VisualSpliter/MirrorServerSync",
+    "main_server_dir": "/root/my_mcdr_server/server",
+    "mirror_server_dir": "/root/my_mcdr_server/server",
+    "dependences": {
+        "mcdreforged": ">=2.0.0",
+        "QuickBackupM": ">=1.x.x"
+    },
+    "entrypoint": "mss.entry"
+}
