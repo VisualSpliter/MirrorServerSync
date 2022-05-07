@@ -26,28 +26,14 @@ A Simple MCDR Plugin To Sync Map Files Of Minecraft On Different Servers
 
 打开终端，执行`ssh-keygen`。无需输入密码，无脑确认即可。再执行`ssh-copy-id {Main Server IP/Mirror Server IP}`（IP地址取决于你是在Main Server还是再Mirror Server，Main就写Mirror，Mirror写Main）之后确认Fingerprint，输入yes后输入对方服务器的密码，Enter。
 
-之后配置config.json。把config.json拖入MCDR的config文件夹中，修改以下内容：
+第一次启动时会自动创建mirror_server_sync.json，内容如下
 
 ```json
 {
-    "id": "Mirror_Server_Sync",
-    "version": "0.0.1-alpha",
-    "name": "Mirror Server Sync",
-    "description":"A Simple MCDR Plugin To Sync Map FIles Of Minecraft On Different Servers",
-    "author": [
-        "MRNOBODY-ZST",
-        "Power-tile"
-    ], 
-    "main_server_ip": "", //此处修改为主服务器IP
-    "world_name": "", //此处填写地图文件夹名
-    "link": "https://github.com/VisualSpliter/MirrorServerSync",
-    "main_server_dir": "/root/my_mcdr_server/server", //修改为服务端地图所在文件夹（主服务器）
-    "mirror_server_dir": "/root/my_mcdr_server/server", //修改为服务端地图所在文件夹（镜像服）
-    "dependences": {
-        "mcdreforged": ">=2.0.0",
-        "QuickBackupM": ">=1.x.x"
-    },
-    "entrypoint": "mss.entry"
+    "main_server_ip": "", //这里修改为主服务器IP
+    "world_name": "", //这里修改为主服务器世界名称
+    "main_server_dir": "/root/my_mcdr_server/server", //这里修改为主服务器server目录
+    "mirror_server_dir": "/root/my_mcdr_server/server", //这里修改为镜像服务器server目录
 }
 ```
 

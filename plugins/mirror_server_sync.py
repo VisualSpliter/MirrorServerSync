@@ -1,23 +1,24 @@
-from cProfile import run
 import os
 import subprocess
 import json
+import rcon
+import mcrcon
 from mcdreforged.api.types import PluginServerInterface, PlayerCommandSource, CommandSource
 from mcdreforged.api.command import Literal
 
-def get_json_location():
-    server = PluginServerInterface()
-    meta = server.get_all_metadata()
-    print(meta.values())
+def get_json_location(server: PluginServerInterface):
+    return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
 
-
-def qb_back():
+def qb_make(server: PluginServerInterface, src: CommandSource):
     pass
 
-def qb_list():
+def qb_back(server: PluginServerInterface, src: CommandSource):
     pass
 
-def rcon_connect():
+def qb_list(server: PluginServerInterface, src: CommandSource):
+    pass
+
+def rcon_connect(server: PluginServerInterface, src: CommandSource):
     pass
 
 
@@ -35,24 +36,10 @@ def open_json(server: PluginServerInterface):
         with open(os.path.join(server.get_data_folder(), 'mirror_server_sync.json'), 'w') as json_file:
             json_file.write('''
 {
-    "id": "Mirror_Server_Sync",
-    "version": "0.0.1-alpha",
-    "name": "Mirror Server Sync",
-    "description":"A Simple MCDR Plugin To Sync Map FIles Of Minecraft On Different Servers",
-    "author": [
-        "MRNOBODY-ZST",
-        "Power-tile"
-    ], 
     "main_server_ip": "",
     "world_name": "",
-    "link": "https://github.com/VisualSpliter/MirrorServerSync",
     "main_server_dir": "/root/my_mcdr_server/server",
     "mirror_server_dir": "/root/my_mcdr_server/server",
-    "dependences": {
-        "mcdreforged": ">=2.0.0",
-        "QuickBackupM": ">=1.x.x"
-    },
-    "entrypoint": "mss.entry"
 }
             ''')
             
@@ -73,6 +60,9 @@ def show_help(src: CommandSource):
     # TODO 在src中显示上面的注释信息
     return None
 
+def do_nothing():
+    pass
+
 def show_permission_fail(src: CommandSource):
     # TODO 在src中显示权限不足信息
     return None
@@ -82,9 +72,9 @@ def permission_check(src: CommandSource):
     return src.has_permission(2)
 
 # 注册指令树
-def register_commands(server: PluginServerInterface):
+def register_commands(server: PluginServerInterface,src: CommandSource):
     server.register_command(
-        Literal('!!msync').requires(lambda src: src.has_permission(4)).runs(show_help())
+        Literal('!!msync').requires(src.has_permission(4)).runs(show_help())
         .then(
             Literal({"peek","-p","p"})
             .requires(permission_check, show_permission_fail)
@@ -93,20 +83,20 @@ def register_commands(server: PluginServerInterface):
         .then(
             Literal({"sync","s","-s"})
             .requires(permission_check, show_permission_fail)
-            .runs(sync_world(open_json()))
+            .runs(sync_world(main_server_dir=main_server_dir,main_server_ip=main_server_ip,world_name=world_name,mirror_server_dir=mirror_server_dir)) #啊吧啊吧皮这一下很开心
         )
         .then(
             Literal({"recover","r","-r"})
             .requires(permission_check, show_permission_fail)
-            .runs()
+            .runs(qb_back())
         )
         .then(
             Literal({"help","h","-h"})
             .requires(permission_check, show_permission_fail)
-            .runs()
+            .runs(show_help())
         )
     )
 
 def on_load(server: PluginServerInterface, old):
-#    register_commands(server)
     open_json(server)
+    register_commands(server)
