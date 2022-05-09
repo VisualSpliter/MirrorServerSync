@@ -1,10 +1,9 @@
 import os
 import subprocess
 import json
-import rcon
-import mcrcon
-from mcdreforged.api.types import PluginServerInterface, PlayerCommandSource, CommandSource, ServerInterface , ServerInformation
+from mcdreforged.api.types import PluginServerInterface, PlayerCommandSource, CommandSource
 from mcdreforged.api.command import Literal
+from mcdreforged.api.rcon import RconConnection
 
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
@@ -15,13 +14,15 @@ def qb_make(server: PluginServerInterface, src: CommandSource):
 def qb_back(server: PluginServerInterface, src: CommandSource):
     pass
 
-def qb_list(server: PluginServerInterface, src: CommandSource):
-    pass
+def qb_list(server: PluginServerInterface):
+    back_up_list = minecraft_rcon.command("!!qb list")
+    server.logger.info(back_up_list)
 
-def rcon_connect(si:ServerInterface):
-    minecraft_rcon = mcrcon.MCRcon(main_server_ip,rcon_password,int(rcon_port))
+def rcon_connect(server:PluginServerInterface,mcrcon: RconConnection):
+    global minecraft_rcon
+    minecraft_rcon = mcrcon(main_server_ip,rcon_password,int(rcon_port))
     minecraft_rcon.connect()
-    si.logger.info("RCON Connected IP:{0} Port:{1}".format(main_server_ip,rcon_port))
+    server.logger.info("RCON Connected IP:{0} Port:{1}".format(main_server_ip,rcon_port))
 
 
 def open_json(server: PluginServerInterface):
@@ -106,7 +107,7 @@ def register_commands(server: PluginServerInterface, src: CommandSource):
 
 def on_load(server: PluginServerInterface, old):
     src = CommandSource
-    si = ServerInterface
+    mcrcon = RconConnection
     open_json(server)
-    rcon_connect(si)
+    rcon_connect(server,mcrcon)
     register_commands(server,src)
