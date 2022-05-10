@@ -1,15 +1,32 @@
+from configparser import RawConfigParser
 import os
 import subprocess
 import json
-from mcdreforged.api.types import PluginServerInterface, PlayerCommandSource, CommandSource
+from mcdreforged.api.types import PluginServerInterface, CommandSource, Info
 from mcdreforged.api.command import Literal
 from mcdreforged.api.rcon import RconConnection
+from mcdreforged.api.rtext import *
+
+#some message
+backup_message = RText("要备份嘞",color=RColor.gold)
+nizaiganshenme = RText("李在赣神麽？",color=RColor.red)
+attenetion_message = RText("手头东西停一停，机器停一停",color=RColor.gold)
+obfuscated_text = RText("111111111111111111111",color=RColor.red,styles=RStyle.obfuscated)
+
+# def convert_to_rtext(text: str):
+#     return RText.to_json_str(text)
 
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
 
-def qb_make(server: PluginServerInterface, src: CommandSource):
-    pass
+def qb_make(server: PluginServerInterface, src: CommandSource, info: Info):
+    while src.has_permission_higher_than(2) == True:
+        server.execute_command("!!qb make BeforeSyncBackup")
+        server.say(RText.to_json_str(backup_message))
+        server.say(RText.to_json_str(attenetion_message))
+    while src.has_permission_higher_than(2) == False:
+        server.reply(info.get_command_source(),nizaiganshenme)
+        server.reply(info.get_command_source(),obfuscated_text)
 
 def qb_back(server: PluginServerInterface, src: CommandSource):
     pass
@@ -41,16 +58,23 @@ def open_json(server: PluginServerInterface):
         with open(os.path.join(server.get_data_folder(), 'mirror_server_sync.json'), 'w') as json_file:
             json_file.write('''
 {
-    "main_server_ip": "",
-    "world_name": "",
+    "main_server_ip": "127.0.0.1",
+    "world_name": "world",
     "main_server_dir": "/root/my_mcdr_server/server",
     "mirror_server_dir": "/root/my_mcdr_server/server",
-    "rcon_password": "",
-    "rcon_port": ""
+    "rcon_password": "123456",
+    "rcon_port": "25575",
+    "qb_folder_dir": "/root/my_mcdr_server/qb_multi"
 }''')
         open_json(server)
 
             
+def stop_sync_start(server: PluginServerInterface):
+# TODO stop server, sync the folder, start server and good to go
+    pass #先pass，一会来写
+#How To You Fix The Command?
+#I commented it :-P
+
         
 
 def sync_world(main_server_dir, mirror_server_dir, main_server_ip, world_name):
@@ -64,12 +88,14 @@ def sync_world(main_server_dir, mirror_server_dir, main_server_ip, world_name):
 # !!msync sync 备份当前镜像服存档，并同步主服务器qb最新存档
 # !!msync recover 回档至同步前存档
 # 所有操作需要权限等级2
-def show_help(src: CommandSource):
+def show_help(server:PluginServerInterface, src: CommandSource):
+    while src.has_permission(2) == True:
+        server.logger.info()
     # TODO 在src中显示上面的注释信息
     return None
 
-def do_nothing(server: PluginServerInterface):
-    server.load_config_simple()
+# def do_nothing(server: PluginServerInterface):
+#     server.load_config_simple()
 
 def show_permission_fail(src: CommandSource):
     # TODO 在src中显示权限不足信息
@@ -86,7 +112,7 @@ def register_commands(server: PluginServerInterface, src: CommandSource):
         .then(
             Literal({"peek","-p","p"})
             .requires(permission_check, show_permission_fail)
-            .runs(do_nothing)
+            .runs(json_sync)
         )
         .then(
             Literal({"sync","s","-s"})
