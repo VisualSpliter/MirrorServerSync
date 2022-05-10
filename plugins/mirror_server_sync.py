@@ -13,9 +13,6 @@ nizaiganshenme = RText("李在赣神麽？",color=RColor.red)
 attenetion_message = RText("手头东西停一停，机器停一停",color=RColor.gold)
 obfuscated_text = RText("111111111111111111111",color=RColor.red,styles=RStyle.obfuscated)
 
-# def convert_to_rtext(text: str):
-#     return RText.to_json_str(text)
-
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
 
