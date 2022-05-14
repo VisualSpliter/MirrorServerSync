@@ -28,6 +28,10 @@ share/python-wheels/
 *.egg
 MANIFEST
 config/
+server/world/
+server/world_nether/
+server/world_the_end/
+*.yml
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

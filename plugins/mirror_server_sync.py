@@ -1,4 +1,5 @@
 # At least it works
+from quopri import decode
 import random
 import os
 import subprocess
@@ -8,6 +9,7 @@ from mcdreforged.api.types import PluginServerInterface, CommandSource, Info
 from mcdreforged.api.command import Literal
 from mcdreforged.api.rcon import RconConnection
 from mcdreforged.api.rtext import *
+from numpy import source
 
 # some message
 backup_message = RText("要备份嘞", color=RColor.gold)
@@ -36,7 +38,7 @@ bruh_img = RText('''
 ⡝⡵⡈⢟⢕⢕⢕⢕⣵⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣿⣿⣿⣿⣿⠿⠋⣀⣈⠙
 ⡝⡵⡕⡀⠑⠳⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⢉⡠⡲⡫⡪⡪⡣'''
 , color = RColor.red)
-
+help_message = RText('''!!msync 显示用法\n!!msync peek 查看主服务器qb最新存档信息\n!!msync sync 备份当前镜像服存档并同步主服务器qb最新存档\n!!msync recover 回档至同步前存档''',color=RColor.white)
 
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
@@ -95,7 +97,7 @@ def open_json(server: PluginServerInterface):
             world_name = data["world_name"]
             rcon_port = data["rcon_port"]
             rcon_password = data["rcon_password"]
-            qb_folder_dir = data["qb_folder"]
+            qb_folder_dir = data["qb_folder_dir"]
     except:
         with open(os.path.join(server.get_data_folder(), 'mirror_server_sync.json'), 'w') as json_file:
             json_file.write('''
@@ -106,8 +108,7 @@ def open_json(server: PluginServerInterface):
     "mirror_server_dir": "/root/my_mcdr_server/server",
     "rcon_password": "123456",
     "rcon_port": "25575",
-    "qb_folder_dir": "/root/my_mcdr_server/qb_multi",
-    "slot"
+    "qb_folder_dir": "/root/my_mcdr_server/qb_multi"
 }''')
         open_json(server)
 
@@ -137,15 +138,23 @@ def sync_world():
 # !!msync sync 备份当前镜像服存档，并同步主服务器qb最新存档
 # !!msync recover 回档至同步前存档
 # 所有操作需要权限等级2
-def show_help(server: PluginServerInterface, src: CommandSource):
-    while src.has_permission(2) == True:
-        server.logger.info()
-    # TODO 在src中显示上面的注释信息
-    return None
+# def show_help(server: PluginServerInterface, src: CommandSource):
+#     if src.is_console:
+#         server.logger.info(help_message)
+#     if src.is_player:
+#         server.reply(help_message)
+#     # TODO 在src中显示上面的注释信息
+#Fxxk shit code again
+#Use src.reply() to reply to the player
+#do not use this function to reply to the console
+#shit shit shit
 
 
 # def do_nothing(server: PluginServerInterface):
 #     server.load_config_simple()
+#Another shit code
+
+
 
 def show_permission_fail(src: CommandSource):
     # TODO 在src中显示权限不足信息
@@ -158,9 +167,9 @@ def permission_check(src: CommandSource):
 
 
 # 注册指令树
-def register_commands(server: PluginServerInterface, src: CommandSource):
+def register_commands(server: PluginServerInterface):
     server.register_command(
-        Literal('!!msync').requires(permission_check, show_permission_fail).runs(show_help)
+        Literal('!!msync').requires(lambda src: src.has_permission_higher_than(2)).runs(lambda src:src.reply(help_message))
             .then(
             Literal({"peek", "-p", "p"})
                 .requires(permission_check, show_permission_fail)
@@ -174,12 +183,12 @@ def register_commands(server: PluginServerInterface, src: CommandSource):
             .then(
             Literal({"recover", "r", "-r"})
                 .requires(permission_check, show_permission_fail)
-                .runs(do_nothing)
+                .runs(show_help)
         )
             .then(
             Literal({"help", "h", "-h"})
                 .requires(permission_check, show_permission_fail)
-                .runs(do_nothing)
+                .runs(show_help)
         )
     )
 
@@ -187,4 +196,4 @@ def register_commands(server: PluginServerInterface, src: CommandSource):
 def on_load(server: PluginServerInterface, old):
     src = CommandSource
     open_json(server)
-    register_commands(server, src)
+    register_commands(server,src)

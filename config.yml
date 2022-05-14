@@ -9,7 +9,7 @@
 
 # The language that MCDR will use to display information
 # Examples: "en_us", "zh_cn"
-language: en_us
+language: zh_cn
 
 
 # The working directory of the server. If you use the default value server/ I will suggest you put all the files related to the server into the server/ directory
@@ -17,7 +17,7 @@ working_directory: server
 
 
 # The console command to start the server. Examples:
-start_command: java -Xms1G -Xmx2G -jar minecraft_server.jar nogui
+start_command: java -Xms2G -Xmx2G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar purpur-1.18.2-1623.jar nogui
 
 
 # The handler to the specific way to parse the standard output text of the server and the correct command for server control
@@ -30,7 +30,7 @@ start_command: java -Xms1G -Xmx2G -jar minecraft_server.jar nogui
 # bungeecord_handler, for Bungeecord server
 # waterfall_handler,  for Waterfall server
 # velocity_handler,  for Velocity server
-handler: vanilla_handler
+handler: velocity_handler
 
 
 # The encoding / decoding format used to encode / decode message to the server.
