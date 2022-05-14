@@ -16,8 +16,7 @@ backup_message = RText("要备份嘞", color=RColor.gold)
 nizaiganshenme = RText("李在赣神麽？", color=RColor.red)
 attenetion_message = RText("手头东西停一停，机器停一停", color=RColor.gold)
 obfuscated_text = RText("111111111111111111111", color=RColor.red, styles=RStyle.obfuscated)
-bruh_img = RText('''
-⡏⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠙⠉⠉⠉⠹
+bruh_img = RText('''⡏⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠙⠉⠉⠉⠹
 ⡇⢸⣿⡟⠛⢿⣷⠀⢸⣿⡟⠛⢿⣷⡄⢸⣿⡇⠀⢸⣿⡇⢸⣿⡇⠀⢸⣿⡇⠀
 ⡇⢸⣿⣧⣤⣾⠿⠀⢸⣿⣇⣀⣸⡿⠃⢸⣿⡇⠀⢸⣿⡇⢸⣿⣇⣀⣸⣿⡇⠀
 ⡇⢸⣿⡏⠉⢹⣿⡆⢸⣿⡟⠛⢻⣷⡄⢸⣿⡇⠀⢸⣿⡇⢸⣿⡏⠉⢹⣿⡇⠀
@@ -36,26 +35,25 @@ bruh_img = RText('''
 ⣷⢄⠻⣿⣟⠿⠦⠍⠉⣡⣾⣿⣿⣿⣿⣿⣿⢸⣿⣦⠙⣿⣿⣿⣿⣿⣿⣿⣿⠟
 ⡕⡑⣑⣈⣻⢗⢟⢞⢝⣻⣿⣿⣿⣿⣿⣿⣿⠸⣿⠿⠃⣿⣿⣿⣿⣿⣿⡿⠁⣠
 ⡝⡵⡈⢟⢕⢕⢕⢕⣵⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣿⣿⣿⣿⣿⠿⠋⣀⣈⠙
-⡝⡵⡕⡀⠑⠳⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⢉⡠⡲⡫⡪⡪⡣'''
-, color = RColor.red)
-help_message = RText('''!!msync 显示用法\n!!msync peek 查看主服务器qb最新存档信息\n!!msync sync 备份当前镜像服存档并同步主服务器qb最新存档\n!!msync recover 回档至同步前存档''',color=RColor.white)
+⡝⡵⡕⡀⠑⠳⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⢉⡠⡲⡫⡪⡪⡣''')
+help_message = RText('''!!msync 显示用法\n!!msync peek 查看主服务器qb最新存档信息\n!!msync sync 备份当前镜像服存档并同步主服务器qb最新存档\n!!msync recover 回档至同步前存档\n!!msync help 显示用法''',color=RColor.white)
 
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
 
 
-def qb_make(server: PluginServerInterface, src: CommandSource, info: Info):
+def qb_make(server: PluginServerInterface, src: CommandSource):
     random_number = random.randint(0, 100)
     while src.has_permission_higher_than(2):
-        server.execute_command("!!qb make BeforeSyncBackup")
-        server.say(RText.to_json_str(backup_message))
-        server.say(RText.to_json_str(attenetion_message))
-        server.say(RText.to_json_str(bruh_img))
+        # server.execute_command("!!qb make BeforeSyncBackup")
+        src.reply(backup_message)
+        src.reply(attenetion_message)
+        src.reply(bruh_img)
     while not src.has_permission_higher_than(2):
         if random_number % 2 == 0:
-            server.reply(info.get_command_source(), nizaiganshenme)
+            src.reply(nizaiganshenme)
         if random_number % 2 == 1:
-            server.reply(info.get_command_source(), obfuscated_text)
+            src.reply(obfuscated_text)
 
 
 def sync_json():
@@ -137,6 +135,7 @@ def sync_world():
 # !!msync peek 查看主服务器qb最新存档信息
 # !!msync sync 备份当前镜像服存档，并同步主服务器qb最新存档
 # !!msync recover 回档至同步前存档
+# !!msync help 显示用法
 # 所有操作需要权限等级2
 # def show_help(server: PluginServerInterface, src: CommandSource):
 #     if src.is_console:
@@ -173,7 +172,7 @@ def register_commands(server: PluginServerInterface):
             .then(
             Literal({"peek", "-p", "p"})
                 .requires(permission_check, show_permission_fail)
-                .runs(json_sync)
+                .runs(lambda src:qb_make(server,src))
         )
             .then(
             Literal({"sync", "s", "-s"})
@@ -183,17 +182,21 @@ def register_commands(server: PluginServerInterface):
             .then(
             Literal({"recover", "r", "-r"})
                 .requires(permission_check, show_permission_fail)
-                .runs(show_help)
+                .runs(sync_world)
         )
             .then(
             Literal({"help", "h", "-h"})
-                .requires(permission_check, show_permission_fail)
-                .runs(show_help)
+                .requires(lambda src: src.has_permission_higher_than(2))
+                .runs(lambda src:src.reply(help_message))
+        )
+            .then(
+            Literal({"bruh", "b", "-b"})
+                .requires(lambda src: src.has_permission_higher_than(2))
+                .runs(lambda src:src.reply(obfuscated_text))
         )
     )
 
 
 def on_load(server: PluginServerInterface, old):
-    src = CommandSource
     open_json(server)
-    register_commands(server,src)
+    register_commands(server)
