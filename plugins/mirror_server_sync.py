@@ -44,25 +44,35 @@ def get_json_location(server: PluginServerInterface):
 
 def qb_make(server: PluginServerInterface, src: CommandSource):
     random_number = random.randint(0, 100)
-    while src.has_permission_higher_than(2):
+    if src.has_permission_higher_than(2):
         # server.execute_command("!!qb make BeforeSyncBackup")
         src.reply(backup_message)
         src.reply(attenetion_message)
         src.reply(bruh_img)
-    while not src.has_permission_higher_than(2):
-        if random_number % 2 == 0:
+    if not src.has_permission_higher_than(2):
+        random_number = random.randint(0,1)
+        if random_number == 0:
             src.reply(nizaiganshenme)
-        if random_number % 2 == 1:
+        if random_number == 1:
             src.reply(obfuscated_text)
 
 
-def sync_json():
-    json_sync_command = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip, main_server_dir, mirror_server_dir,world_name)
-
+def sync_json(src: CommandSource):
+    for i in range(1, number_of_qb_slots + 1):
+        json_sync_command = "rsync -avPz --progress {0}:{1}/slot{3}/*.json {2}/slot{3}".format(main_server_ip, qb_folder_dir_main, qb_folder_dir_mirror,i)
+        src.reply(json_sync_command)
 
 def json_sync(server: PluginServerInterface, src: CommandSource):
-    while src.has_permission_higher_than(2):
+    if src.has_permission_higher_than(2):
         server.stop()
+        sync_json(src)
+        server.start()
+    if not src.has_permission_higher_than(2):
+        random_number = random.randint(0,1)
+        if random_number == 0:
+            src.reply(nizaiganshenme)
+        if random_number == 1:
+            src.reply(obfuscated_text)
 
 
 
@@ -85,7 +95,7 @@ def qb_back(server: PluginServerInterface, src: CommandSource):
 def open_json(server: PluginServerInterface):
     global main_server_dir, main_server_ip, mirror_server_dir, world_name
     global rcon_port, rcon_password
-    global qb_folder_dir
+    global qb_folder_dir_main,qb_folder_dir_mirror,number_of_qb_slots
     try:
         with open(os.path.join(server.get_data_folder(), 'mirror_server_sync.json'), 'r') as json_file:
             data = json.load(json_file)
@@ -95,7 +105,9 @@ def open_json(server: PluginServerInterface):
             world_name = data["world_name"]
             rcon_port = data["rcon_port"]
             rcon_password = data["rcon_password"]
-            qb_folder_dir = data["qb_folder_dir"]
+            qb_folder_dir_main = data["qb_folder_dir_main"]
+            qb_folder_dir_mirror = data["qb_folder_dir_mirror"]
+            number_of_qb_slots = data["number_of_qb_slots"]
     except:
         with open(os.path.join(server.get_data_folder(), 'mirror_server_sync.json'), 'w') as json_file:
             json_file.write('''
@@ -119,15 +131,28 @@ def stop_sync_start(server: PluginServerInterface):
 # How To You Fix The Command?
 # I commented it :-P
 
+baidu = "ping www.baidu.com"
 
-def sync_world():
-    command_rsync = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip,qb_folder_dir,mirror_server_dir,)
-    cmd_content = subprocess.Popen(command_rsync, shell="True" , stdout=subprocess.PIPE)
+def ping_test(src: CommandSource,command):
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    print(type(p))
     lines = []
-    for line in iter(cmd_content.stdout.readline, b''):
+    for line in iter(p.stdout.readline, b''):
         line = line.strip().decode("GB2312")
-        print(line)
+        src.reply(line)
         lines.append(line)
+    # return lines
+
+
+# def sync_world():
+#     command_rsync = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip,qb_folder_dir_main,mirror_server_dir,)
+#     cmd_content = subprocess.Popen(command_rsync, shell="True" , stdout=subprocess.PIPE)
+#     lines = []
+#     for line in iter(cmd_content.stdout.readline, b''):
+#         line = line.strip().decode("GB2312")
+#         print(line)
+#         lines.append(line)
+#Why I Wrote This?
 
 
 # 显示用法
@@ -177,7 +202,7 @@ def register_commands(server: PluginServerInterface):
             .then(
             Literal({"sync", "s", "-s"})
                 .requires(permission_check, show_permission_fail)
-                .runs(sync_world)
+                .runs(lambda src:sync_json(src))
         )
             .then(
             Literal({"recover", "r", "-r"})
@@ -192,7 +217,12 @@ def register_commands(server: PluginServerInterface):
             .then(
             Literal({"bruh", "b", "-b"})
                 .requires(lambda src: src.has_permission_higher_than(2))
-                .runs(lambda src:src.reply(obfuscated_text))
+                .runs(lambda src:src.reply(bruh_img))
+        )
+            .then(
+            Literal({"ping"})
+                .requires(lambda src: src.has_permission_higher_than(2))
+                .runs(lambda src:ping_test(src,baidu))
         )
     )
 
