@@ -1,4 +1,5 @@
 # At least it works
+from http import server
 from quopri import decode
 import random
 import os
@@ -10,6 +11,22 @@ from mcdreforged.api.command import Literal
 from mcdreforged.api.rcon import RconConnection
 from mcdreforged.api.rtext import *
 from numpy import source
+
+#meta data
+PLUGIN_METADATA = {
+    "id": "mirror_server_sync",
+    "version": "0.0.1-alpha",
+    "name": "Mirror Server Sync",
+    "description":"A Simple MCDR Plugin To Sync Map FIles Of Minecraft On Different Servers",
+    "author": [
+        "MRNOBODY-ZST",
+        "Power-tile"
+    ], 
+    "link": "https://github.com/VisualSpliter/MirrorServerSync",
+    "dependences": {
+        "mcdreforged": ">=2.0.0"
+    }
+}
 
 # some message
 backup_message = RText("要备份嘞", color=RColor.gold)
@@ -38,6 +55,8 @@ bruh_img = RText('''⡏⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉⠉⠋⠉⠉⠉⠉⠉
 ⡝⡵⡕⡀⠑⠳⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⢉⡠⡲⡫⡪⡪⡣''')
 help_message = RText('''!!msync 显示用法\n!!msync peek 查看主服务器qb最新存档信息\n!!msync sync 备份当前镜像服存档并同步主服务器qb最新存档\n!!msync recover 回档至同步前存档\n!!msync help 显示用法''',color=RColor.white)
 
+
+#just a little test
 def get_json_location(server: PluginServerInterface):
     return os.path.join(server.get_data_folder(), 'mirror_server_sync.json')
 
@@ -57,16 +76,21 @@ def qb_make(server: PluginServerInterface, src: CommandSource):
             src.reply(obfuscated_text)
 
 
-def sync_json(src: CommandSource):
+def sync_json(server:PluginServerInterface,src: CommandSource):
+    server.reply("Start Sync Json")
     for i in range(1, number_of_qb_slots + 1):
         json_sync_command = "rsync -avPz --progress {0}:{1}/slot{3}/*.json {2}/slot{3}".format(main_server_ip, qb_folder_dir_main, qb_folder_dir_mirror,i)
         src.reply(json_sync_command)
+        cmd_content = subprocess.Popen(json_sync_command, shell="True" , stdout=subprocess.PIPE)
+        lines = []
+        for line in iter(cmd_content.stdout.readline, b''):
+            line = line.strip().decode("GB2312")
+            server.logger.info(line)
+            lines.append(line)
 
 def json_sync(server: PluginServerInterface, src: CommandSource):
     if src.has_permission_higher_than(2):
-        server.stop()
-        sync_json(src)
-        server.start()
+        sync_json(server,src)
     if not src.has_permission_higher_than(2):
         random_number = random.randint(0,1)
         if random_number == 0:
@@ -76,15 +100,12 @@ def json_sync(server: PluginServerInterface, src: CommandSource):
 
 
 
-def qb_back(server: PluginServerInterface, src: CommandSource):
-    pass
-
-
+# def qb_back(server: PluginServerInterface, src: CommandSource):
+#     pass
 # def qb_list(server: PluginServerInterface):
 #     back_up_list = minecraft_rcon.command("!!qb list")
 #     server.logger.info(back_up_list)
 # shit code
-
 # def rcon_connect(server:PluginServerInterface,mcrcon: RconConnection):
 #     global minecraft_rcon
 #     minecraft_rcon = mcrcon(main_server_ip,rcon_password,int(rcon_port))
@@ -118,17 +139,22 @@ def open_json(server: PluginServerInterface):
     "mirror_server_dir": "/root/my_mcdr_server/server",
     "rcon_password": "123456",
     "rcon_port": "25575",
-    "qb_folder_dir": "/root/my_mcdr_server/qb_multi"
+    "qb_folder_dir_main": "/root/my_mcdr_server/qb_multi",
+    "qb_folder_dir_mirror": "/root/my_mcdr_server/qb_multi",
+    "number_of_qb_slots": 5
 }''')
         open_json(server)
 
 
 def stop_sync_start(server: PluginServerInterface):
     # TODO stop server, sync the folder, start server and good to go
-    pass  # 先pass，一会来写
+    server.stop()
+    server.logger.info("Wait for complete stop")
+    server.wait_for_start()
+    sync_world(server)
+    server.start()
 
-
-# How To You Fix The Command?
+# How Did You Fix It?
 # I commented it :-P
 
 baidu = "ping www.baidu.com"
@@ -144,15 +170,19 @@ def ping_test(src: CommandSource,command):
     # return lines
 
 
-# def sync_world():
-#     command_rsync = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip,qb_folder_dir_main,mirror_server_dir,)
-#     cmd_content = subprocess.Popen(command_rsync, shell="True" , stdout=subprocess.PIPE)
-#     lines = []
-#     for line in iter(cmd_content.stdout.readline, b''):
-#         line = line.strip().decode("GB2312")
-#         print(line)
-#         lines.append(line)
+def sync_world(server:PluginServerInterface):
+    command_rsync = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip, main_server_dir, mirror_server_dir, world_name)
+    cmd_content = subprocess.Popen(command_rsync, shell="True" , stdout=subprocess.PIPE)
+    lines = []
+    server.logger.info("Start Sync")
+    server.logger.info(command_rsync)
+    for line in iter(cmd_content.stdout.readline, b''):
+        line = line.strip().decode("GB2312")
+        server.logger.info(line)
+        lines.append(line)
 #Why I Wrote This?
+
+#Now I Know
 
 
 # 显示用法
@@ -170,8 +200,7 @@ def ping_test(src: CommandSource,command):
 #     # TODO 在src中显示上面的注释信息
 #Fxxk shit code again
 #Use src.reply() to reply to the player
-#do not use this function to reply to the console
-#shit shit shit
+#do not use this function
 
 
 # def do_nothing(server: PluginServerInterface):
@@ -179,15 +208,18 @@ def ping_test(src: CommandSource,command):
 #Another shit code
 
 
+#shitcode
+#use .requires(lambda src: src.has_permission_higher_than(2)) to check permission
+# def show_permission_fail(src: CommandSource):
+#     # TODO 在src中显示权限不足信息
+#     return None
 
-def show_permission_fail(src: CommandSource):
-    # TODO 在src中显示权限不足信息
-    return None
+
+# # 确认权限等级
+# def permission_check(src: CommandSource):
+#     return src.has_permission(2)
 
 
-# 确认权限等级
-def permission_check(src: CommandSource):
-    return src.has_permission(2)
 
 
 # 注册指令树
@@ -195,34 +227,24 @@ def register_commands(server: PluginServerInterface):
     server.register_command(
         Literal('!!msync').requires(lambda src: src.has_permission_higher_than(2)).runs(lambda src:src.reply(help_message))
             .then(
-            Literal({"peek", "-p", "p"})
-                .requires(permission_check, show_permission_fail)
+            Literal({"peek"})
+                .requires(lambda src: src.has_permission_higher_than(2))
                 .runs(lambda src:qb_make(server,src))
         )
             .then(
-            Literal({"sync", "s", "-s"})
-                .requires(permission_check, show_permission_fail)
-                .runs(lambda src:sync_json(src))
+            Literal({"sync"})
+                .requires(lambda src: src.has_permission_higher_than(2))
+                .runs(lambda : stop_sync_start(server))
         )
             .then(
-            Literal({"recover", "r", "-r"})
-                .requires(permission_check, show_permission_fail)
-                .runs(sync_world)
+            Literal({"recover"})
+                .requires(lambda src: src.has_permission_higher_than(2))
+                .runs(lambda src:json_sync(server,src))
         )
             .then(
-            Literal({"help", "h", "-h"})
+            Literal({"help"})
                 .requires(lambda src: src.has_permission_higher_than(2))
                 .runs(lambda src:src.reply(help_message))
-        )
-            .then(
-            Literal({"bruh", "b", "-b"})
-                .requires(lambda src: src.has_permission_higher_than(2))
-                .runs(lambda src:src.reply(bruh_img))
-        )
-            .then(
-            Literal({"ping"})
-                .requires(lambda src: src.has_permission_higher_than(2))
-                .runs(lambda src:ping_test(src,baidu))
         )
     )
 
