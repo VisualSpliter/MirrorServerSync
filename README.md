@@ -43,7 +43,7 @@ Windows安装方法：[cwRsync - Rsync for Windows | itefix.net](https://www.ite
 
 `main_server_dir`修改为主服务器MCDR文件夹内server文件夹的绝对路径
 
-`mirror)server_dir`修改为镜像服MCDR文件夹内server文件夹的绝对路径
+`mirror_server_dir`修改为镜像服MCDR文件夹内server文件夹的绝对路径
 
 `qb_folder_dir_main`修改为主服务器MCDR文件夹内qb_multi文件夹的绝对路径
 
@@ -56,3 +56,13 @@ Windows安装方法：[cwRsync - Rsync for Windows | itefix.net](https://www.ite
 修改完后就可以启动MCDR
 
 ## 二、指令说明
+
+!!msync 显示用法
+
+!!msync peek 查看主服务器qb最新存档信息
+
+!!msync sync 备份当前镜像服存档，并同步主服务器qb最新存档
+
+!!msync recover 回档至同步前存档
+
+!!msync help 显示用法

@@ -1,12 +1,10 @@
 # At least it works
-import random
-import os
-import subprocess
-import json
+import random,os,subprocess,json
 from mcdreforged.api.types import PluginServerInterface, CommandSource, Info
 from mcdreforged.api.command import Literal
 from mcdreforged.api.rcon import RconConnection
 from mcdreforged.api.rtext import *
+from mcdreforged.api.decorator import *
 
 
 # some message
@@ -51,6 +49,7 @@ def qb_make(server: PluginServerInterface):
     server.execute_command("!!qb make BeforeSyncBackup")
 
 
+@new_thread("json_sync")
 def sync_json(server:PluginServerInterface,src: CommandSource):
     src.reply("Start Sync Json")
     for i in range(1, number_of_qb_slots + 1):
@@ -95,7 +94,7 @@ def open_json(server: PluginServerInterface):
 }''')
         open_json(server)
 
-
+@new_thread("stop_sync_start")
 def stop_sync_start(server: PluginServerInterface):
     # TODO stop server, sync the folder, start server and good to go
     server.stop()
@@ -107,7 +106,7 @@ def stop_sync_start(server: PluginServerInterface):
 # How Did You Fix It?
 # I commented it :-P
 
-
+@new_thread("world_sync")
 def sync_world(server:PluginServerInterface):
     server.execute_command("!!qb make BeforeSyncBackup")
     command_rsync = "rsync -avPz --progress {0}:{1}/{3} {2}".format(main_server_ip, main_server_dir, mirror_server_dir, world_name)
@@ -138,6 +137,7 @@ def sync_world(server:PluginServerInterface):
 
 #shitcode
 #use .requires(lambda src: src.has_permission_higher_than(2)) to check permission
+@new_thread("no_permission_msg")
 def no_permission_msg(src: CommandSource):
     random_number = random.randint(0,2)
     if random_number == 0:
@@ -155,7 +155,7 @@ def register_commands(server: PluginServerInterface):
             .then(
             Literal({"peek"})
                 .requires(lambda src: src.has_permission_higher_than(2),lambda src:no_permission_msg(src))
-                .runs(lambda src:qb_make(server,src))
+                .runs(lambda src:qb_make(server))
         )
             .then(
             Literal({"sync"})
@@ -178,3 +178,5 @@ def register_commands(server: PluginServerInterface):
 def on_load(server: PluginServerInterface, old):
     open_json(server)
     register_commands(server)
+
+# def on_unload(server: PluginServerInterface):
