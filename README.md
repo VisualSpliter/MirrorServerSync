@@ -18,7 +18,7 @@ Windows安装方法：[cwRsync - Rsync for Windows | itefix.net](https://www.ite
 
 打开终端，执行`ssh-keygen`。无需输入密码，无脑确认即可。再执行`ssh-copy-id Main Server IP`
 
-例如，假如我主服务器的IP为127.0.0.1，命令就为：`ssh-copy-id 127.0.0.1` 
+例如，假如我主服务器的IP为127.0.0.1，命令就为：`ssh-copy-id 127.0.0.1`
 
 之后确认Fingerprint，输入yes后输入对方服务器的密码，一路Enter。
 

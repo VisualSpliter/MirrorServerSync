@@ -1,6 +1,6 @@
 {
     "id": "mirror_server_sync",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Mirror Server Sync",
     "description":{
         "en_us":"A Simple MCDR Plugin To Sync Map FIles Of Minecraft On Different Servers",
